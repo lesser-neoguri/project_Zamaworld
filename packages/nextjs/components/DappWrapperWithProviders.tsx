@@ -12,6 +12,19 @@ import { Header } from "~~/components/Header";
 import { BlockieAvatar } from "~~/components/helper";
 import { wagmiConfig } from "~~/services/web3/wagmiConfig";
 
+const InfiniteScrollBanner = () => {
+  return (
+    <div className="relative w-full h-6 bg-black overflow-hidden">
+      <div className="absolute whitespace-nowrap animate-scroll">
+        <span className="inline-block mr-8 text-white text-xs">PIXEL NFT • PIXEL NFT • PIXEL NFT • PIXEL NFT • PIXEL NFT • PIXEL NFT • PIXEL NFT • PIXEL NFT • PIXEL NFT • PIXEL NFT • PIXEL NFT • PIXEL NFT • PIXEL NFT • PIXEL NFT • PIXEL NFT • PIXEL NFT •</span>
+      </div>
+      <div className="absolute whitespace-nowrap animate-scroll-delayed">
+        <span className="inline-block mr-8 text-white text-xs">PIXEL NFT • PIXEL NFT • PIXEL NFT • PIXEL NFT • PIXEL NFT • PIXEL NFT • PIXEL NFT • PIXEL NFT • PIXEL NFT • PIXEL NFT • PIXEL NFT • PIXEL NFT • PIXEL NFT • PIXEL NFT • PIXEL NFT • PIXEL NFT •</span>
+      </div>
+    </div>
+  );
+};
+
 export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -39,6 +52,7 @@ export const DappWrapperWithProviders = ({ children }: { children: React.ReactNo
           <ProgressBar height="3px" color="#2299dd" />
           <div className={`flex flex-col min-h-screen`}>
             <Header />
+            <InfiniteScrollBanner />
             <main className="relative flex flex-col flex-1">
               <InMemoryStorageProvider>{children}</InMemoryStorageProvider>
             </main>

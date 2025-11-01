@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState, type WheelEvent, type MouseEvent } from "react";
 import { usePixelGrid } from "../hooks/pixelgrid/usePixelGrid";
+import { usePriceHistory } from "../hooks/pixelgrid/usePriceHistory";
+import { PriceHistoryChart } from "../components/PriceHistoryChart";
 
 export default function Home() {
   const formatWeiToEth = (wei: bigint) => {
@@ -24,9 +26,11 @@ export default function Home() {
   const unitsToWei = (units: bigint) => units * UNIT_TO_WEI;
   const weiToUnits = (wei: bigint) => wei / UNIT_TO_WEI;
   const { pixels, isRefreshing, refresh, mint, setPrice, buy, setColor, account, message } = usePixelGrid() as any;
+  const { getPriceHistory } = usePriceHistory();
   const [priceInput, setPriceInput] = useState<Record<number, string>>({});
   const [colorInput, setColorInput] = useState<Record<number, string>>({});
   const [selectedId, setSelectedId] = useState<number | null>(null);
+  const [priceHistory, setPriceHistory] = useState<any[]>([]);
   const [zoom, setZoom] = useState(1);
   const [viewport, setViewport] = useState<{ width: number; height: number }>({ width: 0, height: 0 });
   const [pan, setPan] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
@@ -46,6 +50,16 @@ export default function Home() {
     window.addEventListener("resize", updateViewport);
     return () => window.removeEventListener("resize", updateViewport);
   }, []);
+
+  // 선택된 픽셀의 가격 이력 로드
+  useEffect(() => {
+    if (selectedId !== null) {
+      getPriceHistory(selectedId).then(setPriceHistory);
+    } else {
+      setPriceHistory([]);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedId]);
 
   const selected = useMemo(() => (selectedId != null ? pixels?.[selectedId] : undefined), [selectedId, pixels]);
   const selectedOwned = Boolean(selected?.exists);
@@ -266,7 +280,7 @@ export default function Home() {
 
       {/* 하단 패널 */}
       <div 
-        className={`fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-2xl z-40 transition-transform duration-300 ${
+        className={`fixed bottom-0 left-0 right-0 bg-black border-t border-gray-700 shadow-2xl z-40 transition-transform duration-300 ${
           isPanelOpen ? 'translate-y-0' : 'translate-y-full'
         }`}
         style={{ maxHeight: '50vh' }}
@@ -274,13 +288,13 @@ export default function Home() {
         <div className="flex flex-col h-full">
           {/* 소유한 픽셀 목록 */}
           {account && (
-            <div className="border-b border-gray-200 p-4">
-              <h3 className="text-sm font-semibold text-gray-900 mb-3">
+            <div className="border-b border-gray-700 p-4" style={{ backgroundColor: '#FFD208' }}>
+              <h3 className="text-sm font-semibold text-black mb-3">
                 My Pixels ({ownedPixels.length})
               </h3>
               <div className="flex flex-wrap gap-2 max-h-32 overflow-y-auto">
                 {ownedPixels.length === 0 ? (
-                  <span className="text-xs text-gray-500">No pixels owned</span>
+                  <span className="text-xs text-gray-700">No pixels owned</span>
                 ) : (
                   ownedPixels.map((pixel) => {
                     const hex = pixel.colorRgb !== 0 
@@ -289,19 +303,19 @@ export default function Home() {
                     return (
                       <button
                         key={pixel.id}
-                        className="flex items-center gap-2 px-2 py-1 text-xs border border-gray-300 hover:bg-gray-50 transition-colors"
+                        className="flex items-center gap-2 px-2 py-1 text-xs border border-gray-800 hover:bg-yellow-600 transition-colors bg-white"
                         onClick={() => {
                           setSelectedId(pixel.id);
                           setIsPanelOpen(true);
                         }}
                       >
                         <div 
-                          className="w-4 h-4 border border-gray-300"
+                          className="w-4 h-4 border border-gray-800"
                           style={{ backgroundColor: hex }}
                         />
-                        <span className="text-gray-700">#{pixel.id}</span>
+                        <span className="text-gray-900">#{pixel.id}</span>
                         {pixel.priceWei > 0n && (
-                          <span className="text-green-600">
+                          <span className="text-green-700">
                             {weiToUnits(pixel.priceWei).toString()}u
                           </span>
                         )}
@@ -315,13 +329,17 @@ export default function Home() {
 
           {/* 선택된 픽셀 옵션 */}
           {selectedId != null && (
-            <div className="p-4 border-t border-gray-200">
+            <div className="p-4 border-t border-gray-700 overflow-y-auto">
+              {/* 가격 변동 차트 */}
+              <div className="mb-4">
+                <PriceHistoryChart history={priceHistory} pixelId={selectedId} />
+              </div>
               <div className="flex items-center gap-3 flex-wrap">
-                <span className="text-sm font-medium text-gray-900">#{selectedId}</span>
+                <span className="text-sm font-medium text-white">#{selectedId}</span>
                 
                 {!selectedOwned ? (
                   <button
-                    className="px-3 h-8 text-black text-xs transition-colors"
+                    className="px-3 h-8 text-white text-xs transition-colors"
                     style={{ backgroundColor: 'var(--color-accent)' }}
                     onClick={() => mint(selectedId)}
                   >
@@ -336,7 +354,8 @@ export default function Home() {
                       onChange={e => setPriceInput(s => ({ ...s, [selectedId]: e.target.value.replace(/[^0-9]/g, "") }))}
                     />
                     <button
-                      className="px-3 h-8 bg-gray-900 text-white text-xs hover:bg-gray-800 transition-colors"
+                      className="px-3 h-8 border border-white text-black text-xs hover:bg-yellow-600 transition-colors"
+                      style={{ backgroundColor: '#FFD208' }}
                       onClick={() => {
                         const units = BigInt(priceInput[selectedId] ?? "0");
                         const wei = unitsToWei(units);
@@ -369,7 +388,8 @@ export default function Home() {
                       title="Enter hex color code"
                     />
                     <button
-                      className="px-3 h-8 bg-green-700 text-white text-xs hover:bg-green-800 transition-colors"
+                      className="px-3 h-8 border border-white text-black text-xs hover:bg-yellow-600 transition-colors"
+                      style={{ backgroundColor: '#FFD208' }}
                       onClick={() => setColor(selectedId, colorInput[selectedId] ?? `#${((selected?.colorRgb && selected.colorRgb !== 0) ? selected.colorRgb : 0xFFFFFF).toString(16).padStart(6, "0")}`)}
                     >
                       Set Color
@@ -383,16 +403,16 @@ export default function Home() {
                     >
                       Buy
                     </button>
-                    <span className="text-xs text-gray-600">
+                    <span className="text-xs text-gray-400">
                       {weiToUnits(selected!.priceWei).toString()}u (~{formatWeiToEth(selected!.priceWei)} ETH)
                     </span>
                   </>
                 ) : (
-                  <span className="text-xs text-gray-500">No actions available</span>
+                  <span className="text-xs text-gray-400">No actions available</span>
                 )}
                 
                 <button
-                  className="px-3 h-8 border border-gray-300 text-gray-700 text-xs hover:bg-gray-50 transition-colors"
+                  className="px-3 h-8 border border-gray-600 text-gray-300 text-xs hover:bg-gray-800 transition-colors"
                   onClick={() => setSelectedId(null)}
                 >
                   Close
@@ -402,7 +422,7 @@ export default function Home() {
           )}
 
           {selectedId == null && account && ownedPixels.length === 0 && (
-            <div className="p-4 text-center text-sm text-gray-500">
+            <div className="p-4 text-center text-sm text-gray-400">
               Select a pixel or click a pixel to interact
             </div>
           )}
