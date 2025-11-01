@@ -27,9 +27,9 @@ export const Balance = ({ address, className = "" }: BalanceProps) => {
   if (!address || isLoading || balance === null) {
     return (
       <div className="animate-pulse flex space-x-4">
-        <div className="rounded-md bg-slate-300 h-6 w-6"></div>
+        <div className="bg-slate-300 h-6 w-6"></div>
         <div className="flex items-center space-y-6">
-          <div className="h-2 w-28 bg-slate-300 rounded-sm"></div>
+          <div className="h-2 w-28 bg-slate-300"></div>
         </div>
       </div>
     );
@@ -37,7 +37,7 @@ export const Balance = ({ address, className = "" }: BalanceProps) => {
 
   if (isError) {
     return (
-      <div className="border-2 border-base-content/30 rounded-md px-2 flex flex-col items-center max-w-fit cursor-pointer">
+      <div className="border-2 border-base-content/30 px-2 flex flex-col items-center max-w-fit cursor-pointer">
         <div className="text-warning">Error</div>
       </div>
     );

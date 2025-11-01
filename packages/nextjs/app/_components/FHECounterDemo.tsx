@@ -73,7 +73,7 @@ export const FHECounterDemo = () => {
   // Primary (accent) button — #FFD208 with dark text and warm hover #A38025
   const primaryButtonClass =
     buttonClass +
-    " bg-[#FFD208] text-[#2D2D2D] hover:bg-[#A38025] focus-visible:ring-[#2D2D2D]  cursor-pointer";
+    " text-[#2D2D2D] focus-visible:ring-[#2D2D2D] cursor-pointer";
 
   // Secondary (neutral dark) button — #2D2D2D with light text and accent focus
   const secondaryButtonClass =
@@ -130,6 +130,7 @@ export const FHECounterDemo = () => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-black">
         <button
           className={fheCounter.isDecrypted ? successButtonClass : primaryButtonClass}
+          style={fheCounter.isDecrypted ? undefined : { backgroundColor: 'var(--color-accent)' }}
           disabled={!fheCounter.canDecrypt}
           onClick={fheCounter.decryptCountHandle}
         >

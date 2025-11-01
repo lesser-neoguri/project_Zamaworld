@@ -43,7 +43,7 @@ export function usePixelGrid() {
     try {
       const next: Record<number, PixelState> = {};
       const BATCH_SIZE = 500; // 한 번에 500개씩 읽기
-      const TOTAL_PIXELS = 10000;
+      const TOTAL_PIXELS = 192 * 108; // 20736
       
       // 병렬로 배치 호출 (20개의 배치를 동시에 처리)
       const batchPromises = [];
